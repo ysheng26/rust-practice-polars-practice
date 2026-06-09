@@ -49,7 +49,11 @@ fn drill_3_avg_tip_per_payment_type(df: DataFrame) -> Result<(), Box<dyn std::er
     let x = df
         .lazy()
         .group_by(["payment_type"])
-        .agg([col("tip_amount").mean()]);
+        .agg([col("tip_amount").mean()])
+        .sort(
+            ["payment_type"],
+            SortMultipleOptions::new().with_order_descending(false),
+        );
     println!("{}", x.collect()?);
     Ok(())
 }
