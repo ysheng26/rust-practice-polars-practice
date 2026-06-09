@@ -58,6 +58,27 @@ fn drill_3_avg_tip_per_payment_type(df: DataFrame) -> Result<(), Box<dyn std::er
     Ok(())
 }
 
+#[allow(unused)]
+fn drill_4_avg_trip_distance_and_total_revenue_per_hour(
+    df: DataFrame,
+) -> Result<(), Box<dyn std::error::Error>> {
+    /*
+     * 2 — A harder query: what is the average trip distance and total revenue (total_amount) per hour of day?
+     * You'll need to extract the hour from tpep_pickup_datetime and group by it.
+     */
+
+    let x = df
+        .lazy()
+        .group_by([col("tpep_pickup_datetime").dt().hour().alias("hour")])
+        .agg([col("total_amount").mean(), col("trip_distance").mean()])
+        .sort(
+            ["hour"],
+            SortMultipleOptions::new().with_order_descending(false),
+        );
+    println!("{}", x.collect()?);
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // read the parquet file here
     // print the schema
@@ -66,11 +87,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // println!("{:?}", pr.schema());
 
     let df = pr.finish()?;
-    // let _ = drill_1_print_schemea(&df);
-
-    let _ = drill_3_avg_tip_per_payment_type(df);
     // println!("{:?}", df.schema());
     // println!("{}", df.head(Some(5)));
+
+    // let _ = drill_1_print_schemea(&df);
+    // let _ = drill_2_mean_trip_distance(&df);
+    // let _ = drill_3_avg_tip_per_payment_type(df);
+    let _ = drill_4_avg_trip_distance_and_total_revenue_per_hour(df);
 
     Ok(())
 }
