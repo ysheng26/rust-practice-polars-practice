@@ -79,6 +79,51 @@ fn drill_4_avg_trip_distance_and_total_revenue_per_hour(
     Ok(())
 }
 
+#[allow(unused)]
+fn drill_5_trip_distance_greater_than(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
+    // 5. Return all trips where trip_distance is greater than 10 miles.
+
+    let x = lf.filter(col("trip_distance").gt(10)).sort(
+        ["total_amount"],
+        SortMultipleOptions::new().with_order_descending(true),
+    );
+    println!("{}", x.collect()?);
+    Ok(())
+}
+
+#[allow(unused)]
+fn drill_6_passenter_count_gt_3(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
+    // 6. Return all trips where passenger_count is greater than 3.
+
+    let x = lf.filter(col("passenger_count").gt(3)).sort(
+        ["passenger_count"],
+        SortMultipleOptions::new().with_order_descending(true),
+    );
+
+    println!("{}", x.collect()?);
+    Ok(())
+}
+
+#[allow(unused)]
+fn drill_7_trips_where_type_is_card_and_tip_is_gt_0(
+    lf: LazyFrame,
+) -> Result<(), Box<dyn std::error::Error>> {
+    // 7. Return all trips where payment_type is credit card (1) AND tip_amount is greater than 0.
+
+    let x = lf
+        .filter(col("payment_type").eq(1))
+        .filter(col("tip_amount").gt(0))
+        .sort(
+            ["tip_amount"],
+            SortMultipleOptions::new().with_order_descending(true),
+        );
+
+    let x = x.select([col("tip_amount")]);
+    println!("{}", x.collect()?);
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // read the parquet file here
     // print the schema
@@ -93,7 +138,10 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let _ = drill_1_print_schemea(&df);
     // let _ = drill_2_mean_trip_distance(&df);
     // let _ = drill_3_avg_tip_per_payment_type(df);
-    let _ = drill_4_avg_trip_distance_and_total_revenue_per_hour(df);
+    // let _ = drill_4_avg_trip_distance_and_total_revenue_per_hour(df);
+    // let _ = drill_5_trip_distance_greater_than(df.lazy());
+    // let _ = drill_6_passenter_count_gt_3(df.lazy());
+    let _ = drill_7_trips_where_type_is_card_and_tip_is_gt_0(df.lazy());
 
     Ok(())
 }
