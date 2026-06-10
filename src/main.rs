@@ -165,6 +165,28 @@ fn drill_9(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+#[allow(unused)]
+fn drill_10(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
+    /*
+    * Drill 10 — Count the number of trips per hour of day, sorted by hour ascending.
+    * You've done this pattern before in drill 4 — extract the hour from tpep_pickup_datetime, group by it, but this time aggregate with a count instead of mean/sum.
+    Look for .count() in the Polars expression API.
+    */
+
+    let x = lf
+        .group_by([col("tpep_pickup_datetime").dt().hour().alias("hour")])
+        // .agg([col("tpep_pickup_datetime").count()])
+        .agg([len()])
+        .sort(
+            ["hour"],
+            SortMultipleOptions::new().with_order_descending(false),
+        );
+
+    println!("{}", x.collect()?);
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     unsafe {
         std::env::set_var("POLARS_FMT_MAX_ROWS", "30");
@@ -188,6 +210,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // drill_6_passenter_count_gt_3(df.lazy())?;
     // drill_7_trips_where_type_is_card_and_tip_is_gt_0(df.lazy())?;
     // drill_8_new_trip_percentage(df.lazy())?;
-    drill_9(df.lazy())?;
+    // drill_9(df.lazy())?;
+    drill_10(df.lazy())?;
     Ok(())
 }
