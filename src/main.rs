@@ -136,9 +136,32 @@ fn drill_8_new_trip_percentage(lf: LazyFrame) -> Result<(), Box<dyn std::error::
             ["tip_percentage"],
             SortMultipleOptions::new().with_order_descending(true),
         )
-        .limit(20)
-        .collect();
-    println!("{}", x?);
+        .limit(20);
+    println!("{}", x.collect()?);
+    Ok(())
+}
+
+#[allow(unused)]
+fn drill_9(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
+    /*
+     * Drill 9 — Add a new column trip_duration_minutes calculated from the difference between tpep_dropoff_datetime and tpep_pickup_datetime. Print the first 5 rows showing only tpep_pickup_datetime, tpep_dropoff_datetime, and trip_duration_minutes.
+     */
+    let x = lf
+        .with_column(
+            ((col("tpep_dropoff_datetime") - col("tpep_pickup_datetime"))
+                .dt()
+                .total_minutes())
+            .alias("trip_duration_minutes"),
+        )
+        .select([
+            col("tpep_pickup_datetime"),
+            col("tpep_dropoff_datetime"),
+            col("trip_duration_minutes"),
+        ])
+        .limit(5);
+    println!("{}", x.collect()?);
+    // println!("{:?}", x.collect()?.schema());
+
     Ok(())
 }
 
@@ -164,6 +187,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // drill_5_trip_distance_greater_than(df.lazy())?;
     // drill_6_passenter_count_gt_3(df.lazy())?;
     // drill_7_trips_where_type_is_card_and_tip_is_gt_0(df.lazy())?;
-    drill_8_new_trip_percentage(df.lazy())?;
+    // drill_8_new_trip_percentage(df.lazy())?;
+    drill_9(df.lazy())?;
     Ok(())
 }
