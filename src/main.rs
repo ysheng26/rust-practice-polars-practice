@@ -204,6 +204,25 @@ fn drill_11(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+#[allow(unused)]
+fn drill_12(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
+    // Drill 12 — Find the average tip_percentage per payment type.
+    // You'll need to combine drill 8 (creating the tip_percentage column with with_column) and drill 3 (grouping by payment_type and aggregating). Chain them together in one lazy query.
+
+    let x = lf
+        .filter(col("fare_amount").gt(2.5))
+        .with_column((col("tip_amount") / col("fare_amount") * lit(100)).alias("tip_percentage"))
+        .group_by([col("payment_type")])
+        .agg([col("tip_percentage").mean()])
+        .sort(
+            ["tip_percentage"],
+            SortMultipleOptions::new().with_order_descending(true),
+        );
+    println!("{}", x.collect()?);
+
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     unsafe {
         std::env::set_var("POLARS_FMT_MAX_ROWS", "30");
@@ -229,6 +248,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // drill_8_new_trip_percentage(df.lazy())?;
     // drill_9(df.lazy())?;
     // drill_10(df.lazy())?;
-    drill_11(df.lazy())?;
+    // drill_11(df.lazy())?;
+    drill_12(df.lazy())?;
     Ok(())
 }
