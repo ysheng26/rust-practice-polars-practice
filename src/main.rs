@@ -245,7 +245,19 @@ fn drill_13(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
 #[allow(unused)]
 fn drill_14(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
     // 14. What are the top 5 pickup zones by total revenue (total_amount) during rush hour (7am-10am and 5pm-8pm)?
-    let x = lf;
+    let x = lf
+        .with_columns([col("tpep_pickup_datetime").dt().hour().alias("hour")])
+        .filter(
+            (col("hour").gt_eq(lit(7)).and(col("hour").lt_eq(lit(10))))
+                .or(col("hour").gt_eq(lit(17)).and(col("hour").lt_eq(lit(20)))),
+        )
+        .group_by(["PULocationID"])
+        .agg([col("total_amount").sum()])
+        .sort(
+            ["total_amount"],
+            SortMultipleOptions::new().with_order_descending(true),
+        )
+        .limit(5);
 
     println!("{}", x.collect()?);
     Ok(())
@@ -278,7 +290,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // drill_10(df.lazy())?;
     // drill_11(df.lazy())?;
     // drill_12(df.lazy())?;
-    drill_13(df.lazy())?;
-    // drill_14(df.lazy())?;
+    // drill_13(df.lazy())?;
+    drill_14(df.lazy())?;
     Ok(())
 }
