@@ -187,6 +187,23 @@ fn drill_10(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+#[allow(unused)]
+fn drill_11(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
+    // Drill 11 — Find the top 10 busiest pickup zones (PULocationID) by trip count.
+    // You have everything you need from drill 10 — same pattern, different column. Group by PULocationID, count rows per group, sort descending, take top 10.
+
+    let x = lf
+        .group_by([col("PULocationID")])
+        .agg([len().alias("count")])
+        .sort(
+            ["count"],
+            SortMultipleOptions::new().with_order_descending(true),
+        )
+        .limit(10);
+    println!("{}", x.collect()?);
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     unsafe {
         std::env::set_var("POLARS_FMT_MAX_ROWS", "30");
@@ -211,6 +228,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // drill_7_trips_where_type_is_card_and_tip_is_gt_0(df.lazy())?;
     // drill_8_new_trip_percentage(df.lazy())?;
     // drill_9(df.lazy())?;
-    drill_10(df.lazy())?;
+    // drill_10(df.lazy())?;
+    drill_11(df.lazy())?;
     Ok(())
 }
