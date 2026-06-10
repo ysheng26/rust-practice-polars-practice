@@ -124,7 +124,29 @@ fn drill_7_trips_where_type_is_card_and_tip_is_gt_0(
     Ok(())
 }
 
+#[allow(unused)]
+fn drill_8_new_trip_percentage(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
+    // 8. Add a new column tip_percentage calculated as tip_amount / fare_amount * 100. Print the first 5 rows showing only fare_amount, tip_amount, and tip_percentage.
+
+    let x = lf
+        .filter(col("fare_amount").gt(2.5))
+        .with_column((col("tip_amount") / col("fare_amount") * lit(100)).alias("tip_percentage"))
+        .select([col("fare_amount"), col("tip_amount"), col("tip_percentage")])
+        .sort(
+            ["tip_percentage"],
+            SortMultipleOptions::new().with_order_descending(true),
+        )
+        .limit(20)
+        .collect();
+    println!("{}", x?);
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    unsafe {
+        std::env::set_var("POLARS_FMT_MAX_ROWS", "30");
+    }
+
     // read the parquet file here
     // print the schema
     let f = File::open("./data/yellow_tripdata_2024-01.parquet")?;
@@ -135,13 +157,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // println!("{:?}", df.schema());
     // println!("{}", df.head(Some(5)));
 
-    // let _ = drill_1_print_schemea(&df);
-    // let _ = drill_2_mean_trip_distance(&df);
-    // let _ = drill_3_avg_tip_per_payment_type(df);
-    // let _ = drill_4_avg_trip_distance_and_total_revenue_per_hour(df);
-    // let _ = drill_5_trip_distance_greater_than(df.lazy());
-    // let _ = drill_6_passenter_count_gt_3(df.lazy());
-    let _ = drill_7_trips_where_type_is_card_and_tip_is_gt_0(df.lazy());
-
+    // drill_1_print_schemea(&df);
+    // drill_2_mean_trip_distance(&df)?;
+    // drill_3_avg_tip_per_payment_type(df)?;
+    // drill_4_avg_trip_distance_and_total_revenue_per_hour(df)?;
+    // drill_5_trip_distance_greater_than(df.lazy())?;
+    // drill_6_passenter_count_gt_3(df.lazy())?;
+    // drill_7_trips_where_type_is_card_and_tip_is_gt_0(df.lazy())?;
+    drill_8_new_trip_percentage(df.lazy())?;
     Ok(())
 }
