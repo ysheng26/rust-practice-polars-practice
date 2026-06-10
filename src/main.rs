@@ -223,6 +223,34 @@ fn drill_12(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
+#[allow(unused)]
+fn drill_13(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
+    // 13. For credit card (payment type 1) trips only, what is the average tip percentage per hour of day? Sort by hour.
+
+    let x = lf
+        .filter(col("payment_type").eq(lit(1)))
+        .filter(col("fare_amount").gt(lit(2.5)))
+        .with_column((col("tip_amount") / col("fare_amount") * lit(100)).alias("tip_percentage"))
+        .group_by([col("tpep_pickup_datetime").dt().hour().alias("hour")])
+        .agg([col("tip_percentage").mean()])
+        .sort(
+            ["hour"],
+            SortMultipleOptions::new().with_order_descending(false),
+        );
+
+    println!("{}", x.collect()?);
+    Ok(())
+}
+
+#[allow(unused)]
+fn drill_14(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
+    // 14. What are the top 5 pickup zones by total revenue (total_amount) during rush hour (7am-10am and 5pm-8pm)?
+    let x = lf;
+
+    println!("{}", x.collect()?);
+    Ok(())
+}
+
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     unsafe {
         std::env::set_var("POLARS_FMT_MAX_ROWS", "30");
@@ -249,6 +277,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // drill_9(df.lazy())?;
     // drill_10(df.lazy())?;
     // drill_11(df.lazy())?;
-    drill_12(df.lazy())?;
+    // drill_12(df.lazy())?;
+    drill_13(df.lazy())?;
+    // drill_14(df.lazy())?;
     Ok(())
 }
