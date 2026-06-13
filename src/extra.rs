@@ -1,8 +1,5 @@
 use polars::prelude::*;
 /*
-E2
-For each pickup zone, what percentage of trips are cash vs credit card? The result should have one row per zone with columns PULocationID, cash_pct, credit_pct.
-
 E3
 Find all trips where the tip_amount is higher than the average tip for that hour of day. This requires a window function — computing a per-group statistic without collapsing the rows like group_by does.
 
@@ -45,6 +42,56 @@ pub fn drill_1(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
     );
 
     // how does Expr work?
+
+    // chrome hijacking ctrl-g even when not being focused
+
+    println!("{}", x.collect()?);
+    Ok(())
+}
+
+#[allow(unused)]
+pub fn drill_2(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
+    // E2: For each pickup zone, what percentage of trips are cash vs credit card?
+    // The result should have one row per zone
+    // with columns PULocationID, cash_pct, credit_pct.
+
+    // it transforms the rows, does not filter them
+    // [1, 2, 1, 1, 2].eq(1) -> [true, false, true, true, false]
+    // cast(DataType::Float64)
+    // [true, false, true, true, false] -> [1.0, 0,0, 1,0, 1.0, 0.0]
+    //
+    // But if dataframes only transform, doesn't filter remove rows?
+    // yes it does, but it filters on the [true, false, ture]
+    //
+    // replay mental model
+
+    let x = lf
+        .filter(
+            col("payment_type")
+                .eq(lit(1))
+                .or(col("payment_type").eq(lit(2))),
+        )
+        .group_by([col("PULocationID")])
+        .agg([
+            col("payment_type")
+                .eq(lit(1))
+                .cast(DataType::Float64)
+                .mean()
+                .alias("credit_pct"),
+            col("payment_type")
+                .eq(lit(2))
+                .cast(DataType::Float64)
+                .mean()
+                .alias("cash_pct"),
+        ]);
+
+    // after group_by, do I have access over the previous shape?
+    // no
+    // group_by would collapse the rows
+    //
+    // over() would keep the previous shape
+    // group_by column and aggreegate
+    // do this over
 
     println!("{}", x.collect()?);
     Ok(())

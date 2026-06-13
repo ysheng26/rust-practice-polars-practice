@@ -35,6 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // basic::drill_13(df.lazy())?;
     // basic::drill_14(df.lazy())?;
 
-    extra::drill_1(df.lazy())?;
+    // extra::drill_1(df.lazy())?;
+    extra::drill_2(df.lazy())?;
     Ok(())
 }
