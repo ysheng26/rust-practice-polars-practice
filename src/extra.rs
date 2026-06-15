@@ -1,8 +1,5 @@
 use polars::prelude::*;
 /*
-E3
-Find all trips where the tip_amount is higher than the average tip for that hour of day. This requires a window function — computing a per-group statistic without collapsing the rows like group_by does.
-
 E4
 Load January and February 2024 data, concatenate them into one DataFrame,
 and find the top 10 busiest pickup zones across both months combined. February file under data/
@@ -92,6 +89,32 @@ pub fn drill_2(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
     // over() would keep the previous shape
     // group_by column and aggreegate
     // do this over
+
+    println!("{}", x.collect()?);
+    Ok(())
+}
+
+#[allow(unused)]
+pub fn drill_3(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
+    // E3: Find all trips where the tip_amount is higher than the average tip for that hour of day.
+    // This requires a window function — computing a per-group statistic without collapsing the rows like group_by does.
+
+    // need to find the average tip for hour without group by
+    // something over?
+
+    // with_column for over
+    // over takes in array
+    // over returns Result
+    // Expressions (the math), DataFrame Methods (how we apply the math)
+    let x = lf
+        .with_column(col("tpep_pickup_datetime").dt().hour().alias("hour"))
+        .with_column(
+            col("tip_amount")
+                .mean()
+                .over([col("hour")])?
+                .alias("tip_amount_per_hour"),
+        )
+        .filter(col("tip_amount").gt(col("tip_amount_per_hour")));
 
     println!("{}", x.collect()?);
     Ok(())
