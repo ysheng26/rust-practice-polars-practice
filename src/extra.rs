@@ -1,9 +1,4 @@
 use polars::prelude::*;
-/*
-E4
-Load January and February 2024 data, concatenate them into one DataFrame,
-and find the top 10 busiest pickup zones across both months combined. February file under data/
-*/
 
 #[allow(unused)]
 pub fn drill_1(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
@@ -115,6 +110,39 @@ pub fn drill_3(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
                 .alias("tip_amount_per_hour"),
         )
         .filter(col("tip_amount").gt(col("tip_amount_per_hour")));
+
+    println!("{}", x.collect()?);
+    Ok(())
+}
+
+#[allow(unused)]
+pub fn drill_4(lf_jan: LazyFrame, lf_feb: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
+    // E4
+    // Load January and February 2024 data, concatenate them into one DataFrame,
+    // and find the top 10 busiest pickup zones across both months combined.
+    // February file under data/
+
+    // difference between Default::default() vs UnionArgs::default()
+    // no difference
+    let lf = concat([lf_jan, lf_feb], Default::default())?;
+
+    // BUG: over does not collapse
+    // over needs to spread the value across all rows
+    // let x = lf
+    //     .with_column(len().over([col("PULocationID")])?.alias("pickup_count"))
+    //     .top_k(
+    //         10,
+    //         [col("pickup_count")],
+    //         SortMultipleOptions::new().with_order_descending(false),
+    //     )
+    //     .select([col("PULocationID"), col("pickup_count")]);
+
+    // use group_by when I want to destroy current rows
+    // use over when I need to keep current rows
+    let x = lf
+        .group_by([col("PULocationID")])
+        .agg([len().alias("pickup_count")])
+        .top_k(10, [col("pickup_count")], Default::default());
 
     println!("{}", x.collect()?);
     Ok(())
