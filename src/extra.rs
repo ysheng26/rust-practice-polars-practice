@@ -4,6 +4,9 @@ use polars::prelude::*;
 pub fn drill_1(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
     // E1: What is the 7-day rolling average of daily trip count for January 2024?
     // You'll need to group by date first, then apply a rolling window.
+
+    // rolling_mean is in crate feature rolling_window
+    // and this requires "strings" (agy found it out for me)
     let x = lf
         .filter(col("tpep_pickup_datetime").dt().month().eq(lit(1)))
         .filter(col("tpep_pickup_datetime").dt().year().eq(lit(2024)))
@@ -14,24 +17,19 @@ pub fn drill_1(lf: LazyFrame) -> Result<(), Box<dyn std::error::Error>> {
             ["date"],
             SortMultipleOptions::new().with_order_descending(false),
         )
-        .collect()?;
-
-    // rolling_mean is in crate feature rolling_window
-    // and this requires "strings" (agy found it out for me)
-    // maybe I should have used cargo to add the feature instead of hand changing Cargo.toml
-    let x = x.lazy().with_column(
-        col("trip_count")
-            .rolling_mean(RollingOptionsFixedWindow {
-                // rolling_mean takes self, does that mean it consumes the Expr?
-                // does that mean Expr is Copy or Clone?
-                // Expr is Clone not Copy
-                // it doesn't matter here because Expr is being consumed
-                window_size: 7,
-                min_periods: 7,
-                ..Default::default() // how does this actually work? `impl Default for RollingOptionsFixedWindow`
-            })
-            .alias("trip_count_rolling_7d"),
-    );
+        .with_column(
+            col("trip_count")
+                .rolling_mean(RollingOptionsFixedWindow {
+                    // rolling_mean takes self, does that mean it consumes the Expr?
+                    // does that mean Expr is Copy or Clone?
+                    // Expr is Clone not Copy
+                    // it doesn't matter here because Expr is being consumed
+                    window_size: 7,
+                    min_periods: 7,
+                    ..Default::default() // how does this actually work? `impl Default for RollingOptionsFixedWindow`
+                })
+                .alias("trip_count_rolling_7d"),
+        );
 
     // how does Expr work?
 
