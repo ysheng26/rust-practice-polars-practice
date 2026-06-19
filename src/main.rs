@@ -13,15 +13,15 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // read the parquet file here
     // print the schema
     let f = File::open("./data/yellow_tripdata_2024-01.parquet")?;
-    let pr = ParquetReader::new(f);
-    // println!("{:?}", pr.schema());
+    let mut pr = ParquetReader::new(f);
+    println!("{:?}", pr.schema()?);
 
     let df_jan = pr.finish()?;
     // println!("{:?}", df_jan.schema());
     // println!("{}", df_jan.head(Some(5)));
 
     // basic::drill_1_print_schemea(&df_jan);
-    // basic::drill_2_mean_trip_distance(&df_jan)?;
+    basic::drill_2_mean_trip_distance(&df_jan)?;
     // basic::drill_3_avg_tip_per_payment_type(df_jan)?;
     // basic::drill_4_avg_trip_distance_and_total_revenue_per_hour(df_jan)?;
     // basic::drill_5_trip_distance_greater_than(df_jan.lazy())?;
@@ -39,9 +39,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // extra::drill_2(df_jan.lazy())?;
     // extra::drill_3(df_jan.lazy())?;
 
-    let f = File::open("./data/yellow_tripdata_2024-02.parquet")?;
-    let pr = ParquetReader::new(f);
-    let df_feb = pr.finish()?;
-    extra::drill_4(df_jan.lazy(), df_feb.lazy())?;
+    // let f = File::open("./data/yellow_tripdata_2024-02.parquet")?;
+    // let pr = ParquetReader::new(f);
+    // let df_feb = pr.finish()?;
+    // extra::drill_4(df_jan.lazy(), df_feb.lazy())?;
     Ok(())
 }

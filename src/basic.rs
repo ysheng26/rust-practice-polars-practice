@@ -32,11 +32,19 @@ pub fn drill_2_mean_trip_distance(df: &DataFrame) -> Result<(), Box<dyn std::err
     // x.mean() returns Option<Float64>
     // without and_then this returns Option<Option<Float64>>
     // and_then is essentially flatmap
+
+    // let mean = df
+    //     .column("trip_distance")?
+    //     .as_series()
+    //     .and_then(|x| x.mean());
+    // println!("{}", mean.unwrap_or(0.0));
+
+    // drill 2 when writting post
     let mean = df
-        .column("trip_distance")?
-        .as_series()
-        .and_then(|x| x.mean());
-    println!("{}", mean.unwrap_or(0.0));
+        .clone() // clone here just to not consume df passed in
+        .lazy()
+        .select([col("trip_distance").mean().alias("avg_trip_distance")]);
+    println!("{}", mean.collect()?); // how to just get a number?
     Ok(())
 }
 
