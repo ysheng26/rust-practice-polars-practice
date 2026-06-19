@@ -1,4 +1,4 @@
-use std::fs::File;
+// use std::fs::File;
 
 use polars::prelude::*;
 
@@ -12,11 +12,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     // read the parquet file here
     // print the schema
-    let f = File::open("./data/yellow_tripdata_2024-01.parquet")?;
-    let pr = ParquetReader::new(f);
+    // let f = File::open("./data/yellow_tripdata_2024-01.parquet")?;
+    // let pr = ParquetReader::new(f);
     // println!("{:?}", pr.schema()?);
 
-    let df_jan = pr.finish()?;
+    // let df_jan = pr.finish()?;
     // println!("{:?}", df_jan.schema());
     // println!("{}", df_jan.head(Some(5)));
 
@@ -35,7 +35,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // basic::drill_13(df_jan.lazy())?;
     // basic::drill_14(df_jan.lazy())?;
 
-    extra::drill_1(df_jan.lazy())?;
+    // extra::drill_1(df_jan.lazy())?;
     // extra::drill_2(df_jan.lazy())?;
     // extra::drill_3(df_jan.lazy())?;
 
@@ -43,5 +43,13 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     // let pr = ParquetReader::new(f);
     // let df_feb = pr.finish()?;
     // extra::drill_4(df_jan.lazy(), df_feb.lazy())?;
+
+    // LazyFrame::scan_parquet to avoid reading the whole file in memory
+    let lf_jan = LazyFrame::scan_parquet(
+        PlRefPath::new("./data/yellow_tripdata_2024-01.parquet"),
+        Default::default(),
+    )?;
+    extra::drill_3(lf_jan)?;
+
     Ok(())
 }
