@@ -136,7 +136,7 @@ pub fn drill_8_new_trip_percentage(lf: LazyFrame) -> Result<(), Box<dyn std::err
 
     let x = lf
         .filter(col("fare_amount").gt(2.5))
-        .with_column((col("tip_amount") / col("fare_amount") * lit(100)).alias("tip_percentage"))
+        .with_column((col("tip_amount") / col("fare_amount") * lit(100.0)).alias("tip_percentage"))
         .select([col("fare_amount"), col("tip_amount"), col("tip_percentage")])
         .sort(
             ["tip_percentage"],
